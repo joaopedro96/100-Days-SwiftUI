@@ -17,6 +17,12 @@ struct ContentView: View {
 
 	private let localCurrency = Locale.current.currency?.identifier ?? "USD"
 
+	private var totalAmount: Double {
+		let tipSelection = Double(tipPercentage)
+		let fullPrice = checkAmount * (1 + tipSelection/100)
+		return fullPrice
+	}
+
 	private var totalPerPerson: Double {
 		let tipSelection = Double(tipPercentage)
 		let numberPeople = Double(numberOfPeople + 2)
@@ -41,14 +47,20 @@ struct ContentView: View {
 
 				Section("How much do you wanna tip?") {
 					Picker("Tip percentage", selection: $tipPercentage) {
-						ForEach(tipPercentages, id: \.self) {
+//						ForEach(tipPercentages, id: \.self) {
+						ForEach(0..<101) {
 							Text("\($0)")
 						}
 					}
-					.pickerStyle(.segmented)
+//					.pickerStyle(.segmented)
+					.pickerStyle(.navigationLink)
 				}
 
-				Section("Total per person") {
+				Section("Total amount") {
+					Text(totalAmount, format: .currency(code: localCurrency))
+				}
+
+				Section("Amount per person") {
 					Text(totalPerPerson, format: .currency(code: localCurrency))
 				}
 			}
