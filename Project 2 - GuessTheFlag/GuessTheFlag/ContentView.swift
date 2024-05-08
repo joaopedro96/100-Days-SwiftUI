@@ -16,6 +16,8 @@ struct ContentView: View {
 	@State private var correctAnswerIndex = Int.random(in: 0...2)
 	@State private var score = 0
 
+	@State private var round = 0
+	@State private var showGameOver = false
 
 	private let customBlue: Color = .init(red: 0.1, green: 0.2, blue: 0.45)
 	private let customRed: Color = .init(red: 0.76, green: 0.15, blue: 0.26)
@@ -60,36 +62,58 @@ struct ContentView: View {
 				.clipShape(.rect(cornerRadius: 20))
 
 				Spacer()
-				Spacer()
 
 				Text("Score: \(score)")
 					.foregroundStyle(.white)
 					.font(.headline.bold())
+					.multilineTextAlignment(.center)
+				Text("(\(8 - round) attempts remaining)")
+					.foregroundStyle(.white)
+					.font(.subheadline.weight(.regular))
+					.multilineTextAlignment(.center)
 				Spacer()
 			}
 			.padding()
 		}
+		.alert("Game Over!\nYour score was \(score)/8.", isPresented: $showGameOver) {
+			Button("Reset game", action: resetGame)
+		}
 		.alert(scoreTitle, isPresented: $showingScore) {
 			Button("Continue", action: askNextQuestion)
 		} message: {
-			Text("Your score is \(score)")
+			Text("Your score is \(score).")
 		}
     }
 
 	private func didTapFlag(with index: Int) {
+		round += 1
 		if (index == correctAnswerIndex) {
 			scoreTitle = "Correct"
 			score += 1
 		} else {
-			scoreTitle = "Wrong"
+			scoreTitle = "Wrong!\nThats the flag of \(countries[index].rawValue)"
 		}
 
 		showingScore = true
 	}
 
+	private func gameHasEnded() -> Bool {
+		return (round >= 8)
+	}
+
 	private func askNextQuestion() {
-		countries.shuffle()
-		correctAnswerIndex = Int.random(in: 0...2)
+		if gameHasEnded() {
+			showGameOver = true
+		} else {
+			countries.shuffle()
+			correctAnswerIndex = Int.random(in: 0...2)
+		}
+	}
+
+	private func resetGame() {
+		round = 0
+		score = 0
+		askNextQuestion()
 	}
 }
 
