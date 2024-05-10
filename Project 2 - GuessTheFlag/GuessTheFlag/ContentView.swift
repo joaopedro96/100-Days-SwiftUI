@@ -34,8 +34,7 @@ struct ContentView: View {
 			VStack {
 				Spacer()
 				Text("Guess the Flag")
-					.font(.largeTitle.bold())
-					.foregroundStyle(.white)
+					.titleStyle()
 
 				VStack(spacing: 15) {
 					VStack {
@@ -50,9 +49,7 @@ struct ContentView: View {
 						Button {
 							didTapFlag(with: index)
 						} label: {
-							Image(countries[index].rawValue)
-								.clipShape(.capsule)
-								.shadow(radius: 5)
+							FlagImage(imageName: countries[index].rawValue)
 						}
 					}
 				}
