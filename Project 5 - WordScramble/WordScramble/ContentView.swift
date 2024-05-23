@@ -16,9 +16,15 @@ struct ContentView: View {
 	@State private var errorMessage = ""
 	@State private var showingError = false
 
+	@State private var score = 0
+
     var body: some View {
 		NavigationStack {
 			List {
+				Section("Score") {
+					Text("\(score)")
+				}
+
 				Section {
 					TextField("Enter your word", text: $newWord)
 						.textInputAutocapitalization(.never)
@@ -39,6 +45,9 @@ struct ContentView: View {
 			.alert(errorTitle, isPresented: $showingError) { } message: {
 				Text(errorMessage)
 			}
+			.toolbar {
+				Button("Reset", action: resetGame)
+			}
 		}
     }
 
@@ -46,6 +55,11 @@ struct ContentView: View {
 		let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
 
 		guard answer.count > 0 else { return }
+
+		guard hasMoreThanThreeLetters(word: answer) else {
+			wordError(title: "Answer not valid", message: "Please insert a word with more than three letters and different from the start word (\(rootWord))")
+			return
+		}
 
 		guard isOriginal(word: answer) else {
 			wordError(title: "Word used already", message: "Be more original!")
@@ -62,11 +76,11 @@ struct ContentView: View {
 			return
 		}
 
-
 		withAnimation {
 			usedWord.insert(answer, at: 0)
 		}
 		newWord = ""
+		score += answer.count
 	}
 
 	func startGame() {
@@ -104,10 +118,23 @@ struct ContentView: View {
 		return misspelledRange.location == NSNotFound
 	}
 
+	func hasMoreThanThreeLetters(word: String) -> Bool {
+		let hasMoreThanThreeLetters = (word.count > 3)
+		let isNotRootWord = (word != rootWord)
+		return hasMoreThanThreeLetters && isNotRootWord
+	}
+
 	func wordError(title: String, message: String) {
 		errorTitle = title
 		errorMessage = message
 		showingError = true
+	}
+
+	func resetGame() {
+		newWord = ""
+		usedWord = []
+		score = 0
+		startGame()
 	}
 }
 
