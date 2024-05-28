@@ -19,6 +19,8 @@ struct ContentView: View {
 	@State private var round = 0
 	@State private var showGameOver = false
 
+	@State private var animationAmount = 0.0
+
 	private let customBlue: Color = .init(red: 0.1, green: 0.2, blue: 0.45)
 	private let customRed: Color = .init(red: 0.76, green: 0.15, blue: 0.26)
 
@@ -48,8 +50,12 @@ struct ContentView: View {
 					ForEach(0..<3) { index in
 						Button {
 							didTapFlag(with: index)
+							animationAmount += 360
 						} label: {
 							FlagImage(imageName: countries[index].rawValue)
+								.rotation3DEffect(
+									.degrees(animationAmount), axis: (x: 0.0, y: 1.0, z: 0.0)
+								)
 						}
 					}
 				}
