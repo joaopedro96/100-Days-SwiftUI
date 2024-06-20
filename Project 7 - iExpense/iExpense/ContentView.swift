@@ -2,36 +2,80 @@
 //  ContentView.swift
 //  iExpense
 //
-//  Created by João Pedro Mata on 06/06/24.
+//  Created by João Pedro Mata on 18/06/24.
 //
 
 import SwiftUI
 
-struct SecondView: View {
-	@Environment(\.dismiss) var dismiss
+struct ExpenseItem: Identifiable, Codable {
+	var id = UUID()
 	let name: String
+	let type: String
+	let amount: Double
+}
 
-	var body: some View {
-		Text("Hello, \(name)!")
-		Button("dismiss") {
-			dismiss()
+@Observable
+class Expenses {
+	var items = [ExpenseItem]() {
+		didSet {
+			if let encodedData = try? JSONEncoder().encode(items) {
+				UserDefaults.standard.setValue(encodedData, forKey: "Items")
+			}
 		}
+	}
+
+	init() {
+		if let savedItems = UserDefaults.standard.data(forKey: "Items") {
+			if let decodedItems = try? JSONDecoder().decode([ExpenseItem].self, from: savedItems) {
+				items = decodedItems
+				return
+			}
+		}
+		items = []
 	}
 }
 
 struct ContentView: View {
-	@State private var showingSheet = false
 
-    var body: some View {
-		Button("Show sheet") {
-			showingSheet.toggle()
+	@State private var expenses = Expenses()
+
+	@State private var showingAddExpense = false
+
+	var body: some View {
+		NavigationStack {
+			List {
+				ForEach(expenses.items) { item in
+					HStack {
+						VStack(alignment: .leading) {
+							Text(item.name)
+								.font(.headline)
+
+							Text(item.type)
+						}
+						Spacer()
+						Text(item.amount, format: .currency(code: "USD"))
+					}
+
+				}
+				.onDelete(perform: removeItems)
+			}
+			.navigationTitle("iExpenses")
+			.toolbar {
+				Button("Add expense", systemImage: "plus") {
+					showingAddExpense = true
+				}
+			}
+			.sheet(isPresented: $showingAddExpense) {
+				AddView(expenses: expenses)
+			}
 		}
-		.sheet(isPresented: $showingSheet) {
-			SecondView(name: "John")
-		}
-    }
+	}
+
+	func removeItems(at offset: IndexSet) {
+		expenses.items.remove(atOffsets: offset)
+	}
 }
 
 #Preview {
-    ContentView()
+	ContentView()
 }
